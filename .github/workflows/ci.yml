@@ -19,10 +19,22 @@ jobs:
         with:
           go-version: 'stable'
 
-      - name: Install clang/llvm/libbpf/bpftool
+      - name: Install clang/llvm/libbpf
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang llvm libbpf-dev linux-tools-common linux-tools-generic linux-tools-$(uname -r)
+          sudo apt-get install -y clang llvm libbpf-dev
+
+      - name: Install bpftool
+        # apt's linux-tools-$(uname -r) package doesn't exist for the
+        # runner's kernel flavor (e.g. -azure), so grab a static binary
+        # release instead.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download --repo libbpf/bpftool --pattern 'bpftool-*-amd64.tar.gz' -O bpftool.tar.gz --clobber
+          sudo tar -C /usr/local/bin -xzf bpftool.tar.gz bpftool
+          sudo chmod +x /usr/local/bin/bpftool
+          bpftool version
 
       - name: Verify kernel BPF support
         run: sudo bpftool feature probe kernel

@@ -1,5 +1,7 @@
 # netguard
 
+[![CI](https://github.com/ipekutku/ebpf-netpol/actions/workflows/ci.yml/badge.svg)](https://github.com/ipekutku/ebpf-netpol/actions/workflows/ci.yml)
+
 An eBPF-based runtime network policy enforcer for Kubernetes: kernel-level
 detection and blocking of policy-violating pod-to-pod (and pod-to-external)
 connections as they happen, with violations surfaced via Prometheus/Grafana
