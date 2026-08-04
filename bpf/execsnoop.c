@@ -15,6 +15,12 @@ struct event {
 	char comm[16];
 };
 
+// struct event is otherwise only referenced through a local pointer, which
+// clang's BPF target can optimize out of the object's debug info entirely.
+// A dummy global reference keeps it there so bpf2go's -type flag can find
+// it and generate a matching Go struct.
+struct event *unused_event __attribute__((unused));
+
 struct {
 	__uint(type, BPF_MAP_TYPE_RINGBUF);
 	__uint(max_entries, 256 * 1024);
