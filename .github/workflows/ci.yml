@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  m0-toolchain:
+    # eBPF needs a real Linux kernel with BPF support (5.8+); this doesn't
+    # run reliably on Docker Desktop for Mac/Windows, so ubuntu-latest is
+    # the actual verification environment for the M0 exit criteria, not
+    # just a build check.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Install clang/llvm/libbpf/bpftool
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang llvm libbpf-dev linux-tools-common linux-tools-generic linux-tools-$(uname -r)
+
+      - name: Verify kernel BPF support
+        run: sudo bpftool feature probe kernel
+
+      - name: go generate (compile BPF C -> bytecode via bpf2go)
+        run: make generate
+
+      - name: go build
+        run: make build
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: go test
+        run: go test ./...
+
+      - name: Load the BPF program and confirm Go reads an event it emits
+        run: |
+          set -x
+          sudo timeout 5 ./bin/netguard > netguard.log 2>&1 &
+          sleep 2
+          /bin/true
+          wait
+          cat netguard.log
+          grep -q 'execve: pid=' netguard.log
