@@ -5,6 +5,7 @@
 // networking code is written. It attaches to the sys_enter_execve
 // tracepoint and emits one event per execve() call via a ring buffer.
 
+#include <linux/types.h>
 #include <bpf/bpf_helpers.h>
 
 char __license[] SEC("license") = "Dual MIT/GPL";
