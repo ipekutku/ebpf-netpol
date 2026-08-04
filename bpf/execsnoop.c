@@ -5,7 +5,15 @@
 // networking code is written. It attaches to the sys_enter_execve
 // tracepoint and emits one event per execve() call via a ring buffer.
 
-#include <linux/types.h>
+// linux/types.h pulls in asm/types.h, which isn't on clang's search path
+// when cross-compiling for the bpf target (-target bpf doesn't carry the
+// host's arch-specific multiarch include dir). Define the fixed-width
+// typedefs bpf_helper_defs.h expects directly instead.
+typedef unsigned char __u8;
+typedef unsigned short __u16;
+typedef unsigned int __u32;
+typedef unsigned long long __u64;
+
 #include <bpf/bpf_helpers.h>
 
 char __license[] SEC("license") = "Dual MIT/GPL";
